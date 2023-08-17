@@ -1,0 +1,41 @@
+steps:
+  - name: 'hashicorp/terraform:1.0.0'
+    args:
+      - '-c'
+      - |
+        terraform init -upgrade
+        echo "*************** TERRAFORM INIT ******************"
+    id: tfinit
+    entrypoint: sh
+  - name: 'hashicorp/terraform:1.0.0'
+    args:
+      - '-c'
+      - |
+        terraform plan -var="project_id=$$project_id"
+        echo "*************** TERRAFORM PLAN ******************"
+    id: tf plan
+    entrypoint: sh
+  - name: 'hashicorp/terraform:1.0.0'
+    args:
+      - '-c'
+      - |
+        terraform apply -var="project_id=$$project_id" -auto-approve
+        echo "*************** TERRAFORM APPLY ******************"
+    id: tf apply
+    entrypoint: sh
+    secretEnv:
+      - project_id
+  - name: 'hashicorp/terraform:1.0.0'
+    args:
+      - '-c'
+      - |
+        terraform apply -destroy -auto-approve
+        echo "*************** TERRAFORM DESTROY ******************"
+    id: tf destroy
+    entrypoint: sh
+options:
+  logging: CLOUD_LOGGING_ONLY
+availableSecrets:
+  secretManager:
+    - versionName: projects/NUMBER/secrets/NAME_OF_YOUR_SECRET/versions/1
+      env: project_id
